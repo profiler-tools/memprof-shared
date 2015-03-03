@@ -157,35 +157,38 @@ function getMousePos(canvas, evt) {
       var tracePool = this.tracePool;
       // var start = baseLine;
       this.cleanPad();
-      ctx.strokeStyle = 'black';
-      var entry, entryHeight, prevEntry, entryDuration;
+      ctx.lineWidth = 5;
+      var entry, entryHeight, prevEntry, entryDuration, targetX, targetY;
       for (var i = 0, len = tracePool.length; i < len; i++) {
         entry = tracePool[i];
         entryHeight = (entry.size / this.heightRatio);
-        if (i > 0) {
+        if (i !== 0 && entry.timestamp != null) {
           prevEntry = tracePool[i-1];
           entryDuration = Math.round((entry.timestamp - prevEntry.timestamp)) * 4 / 1000;
         } else {
           entryDuration = 0;
         }
     
-        ctx.lineWidth = 5;
         ctx.beginPath();
-        ctx.moveTo(entryDuration + 10 + i * 10, baseLine);
-        ctx.lineTo(entryDuration + 10 + i * 10, baseLine - entryHeight);
+        targetX = entryDuration + 10 + i * 10;
+        targetY = baseLine - entryHeight;
+        ctx.moveTo(targetX, baseLine);
+        ctx.lineTo(targetX, targetY);
         ctx.strokeStyle = '#ff0000';
         if (entryHeight < 0) {
           ctx.strokeStyle = '#0000ff';
         } 
         ctx.stroke();
-        // ctx.strokeStyle = '#000000';
-        // if (i > 0) {
-        //   ctx.moveTo(10 + (i - 1) * 10, start);
-        //   ctx.lineTo(10 + i * 10, start - (entryHeight / 10) );
-        //   ctx.stroke();
-        // } 
-        // start = start - entryHeight;
+
       }
+
+      // draw baseLine
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(0, baseLine);
+      ctx.lineTo(targetX, baseLine);
+      ctx.strokeStyle = '#c8c8c8';
+      ctx.stroke();
     },
 
     stop: function PL_stop() {
