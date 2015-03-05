@@ -20,6 +20,7 @@ function getMousePos(canvas, evt) {
     this.rangeStart = 0;
     this.rangeEnd = 0;
     this.step = 0;
+    this.maxLabel = 0;
   }
 
   PadManager.prototype = {
@@ -54,6 +55,10 @@ function getMousePos(canvas, evt) {
     },
 
     _initRange: function PL_initRange(e) {
+      if (this.tracePool.length === 0) {
+        return;
+      }
+
       this.rangeDrawable = true;
       this._elements.pad.addEventListener('mousemove', this);
       this._elements.pad.addEventListener('mouseout', this);
@@ -155,13 +160,23 @@ function getMousePos(canvas, evt) {
       var baseLine = this.padHeight / 2;  // should be 400
       var ctx = this._elements.pad.getContext('2d');
       var tracePool = this.tracePool;
-      // var start = baseLine;
+
+      // init label
+      this.maxLabel = 0;
+
+      //init pad
       this.cleanPad();
       ctx.lineWidth = 5;
-      var entry, entryHeight, prevEntry, entryDuration, targetX, targetY;
+      var entry, entryHeight, prevEntry,
+           entryDuration, targetX, targetY;
       for (var i = 0, len = tracePool.length; i < len; i++) {
         entry = tracePool[i];
+
+        // update maxAllocate
+        this.setMaxLabel(entry.size);
+
         entryHeight = (entry.size / this.heightRatio);
+        //console.log('pizza:' + entry.size);
         if (i !== 0 && entry.timestamp != null) {
           prevEntry = tracePool[i-1];
           entryDuration = Math.round((entry.timestamp - prevEntry.timestamp)) * 4 / 1000;
@@ -182,6 +197,9 @@ function getMousePos(canvas, evt) {
 
       }
 
+      // display label
+      this.setLabel();
+
       // draw baseLine
       ctx.lineWidth = 1;
       ctx.beginPath();
@@ -189,6 +207,18 @@ function getMousePos(canvas, evt) {
       ctx.lineTo(targetX, baseLine);
       ctx.strokeStyle = '#c8c8c8';
       ctx.stroke();
+    },
+
+    setLabel:  function PL_setLabel () {
+      this._elements.positiveMax.textContent = this.maxLabel;
+      this._elements.negativeMax.textContent = '-' + this.maxLabel;
+    },
+
+    setMaxLabel: function PL_setMaxLabel (maxAllocate) {
+      maxAllocate = Math.abs(maxAllocate);
+      if (maxAllocate > this.maxLabel) {
+        this.maxLabel = maxAllocate;
+      }
     },
 
     stop: function PL_stop() {
